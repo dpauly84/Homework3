@@ -7,7 +7,7 @@
 #ifndef _ARRAY_LIST_HPP
 #define _ARRAY_LIST_HPP
 
-
+#include <string> // provides std::string
 
 const int MAX_PARTS = 100;
 
