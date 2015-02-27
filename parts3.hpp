@@ -15,7 +15,7 @@ const int LINE_LENGTH = 45; // length of line from part file
 const int NAME_LENGTH = 17; // Max length of part name (pname) in part file
 
 const char *IN_FILENAME = // name of part input file to be read from
-        "part_data.txt";
+        "/home/shockerpc/ClionProjects/Homework3/part_data.txt";
 
 const std::string INSTRUCTIONS =
         "\nAvailable choices:\n"
@@ -56,6 +56,6 @@ void delete_part(Partlist &parts);
 void save_part_list(Partlist &parts, char outfile_name[]);
 
 // returns string with a set length of characters
-std::string get_string(std::string prompt, int length);
+std::string get_string(std::string prompt, unsigned int length);
 
 #endif

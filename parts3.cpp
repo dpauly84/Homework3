@@ -17,7 +17,6 @@ int main() {
 
     Partlist plist; // list for parts
     char outFileName[] = "part_list.txt"; // output file
-    double weight; // User input weight to use for comparison
     int userSelection; // user input to be used for choices
     ifstream inFile(IN_FILENAME); // input file
 
@@ -129,21 +128,25 @@ void print_part(std::ostream &os, Part part) {
 
 // Adds part from user input to parts list
 bool add_part(Partlist &parts) {
-    Part addPart; // part to be added
-    char tempName[17]; // temporary hold part name in c-string
-    cout << "\nAdding a new part..." << endl;
-    cout << "\tEnter part name: ";
+    if (!parts.is_full()) { // ensure list isn't full
+        Part addPart; // part to be added
+        char tempName[17]; // temporary hold part name in c-string
+        cout << "\nAdding a new part..." << endl;
+        cout << "\tEnter part name: ";
 
-    // get user input and store in part to be saved to the list
-    cin.getline(tempName, 17); // read 17 characters
-    addPart.pname = tempName;  // convert c-string to std::string
-    addPart.pnumber = get_string("\tEnter a part number: ", 7);
-    addPart.weight = get_double("\tEnter weight: ");
-    addPart.supplier1 = get_string("\tEnter supplier code of primary supplier: ", 4);
-    addPart.supplier2 = get_string("\tEnter supplier code of secondary supplier: ", 4);
-    addPart.inStock = get_int("\tEnter number in stock: ");
-    cout << endl;
-    parts.add(addPart); // add part to the parts list
+        // get user input and store in part to be saved to the list
+        cin.getline(tempName, 17); // read 17 characters
+        addPart.pname = tempName;  // convert c-string to std::string
+        addPart.pnumber = get_string("\tEnter a part number: ", 7);
+        addPart.weight = get_double("\tEnter weight: ");
+        addPart.supplier1 = get_string("\tEnter supplier code of primary supplier: ", 4);
+        addPart.supplier2 = get_string("\tEnter supplier code of secondary supplier: ", 4);
+        addPart.inStock = get_int("\tEnter number in stock: ");
+        cout << endl;
+        parts.add(addPart); // add part to the parts list
+        return true;
+    } else return false;
+
 
 }
 
@@ -184,19 +187,22 @@ void save_part_list(Partlist &parts, char outfile_name[]) {
 }
 
 // returns string with a set length of characters
-string get_string(string prompt, int length) {
+string get_string(string prompt, unsigned int length) {
     string returnString;
     bool isValidString = true; // conversion status
 
-    do {
-        if (!isValidString) {
-            cout << "You must enter " << length << " characters." << endl;
-        }
-        cout << prompt;
-        cin >> returnString;
-        if (returnString.length() == length) {
-            isValidString = true;
-        } else isValidString = false;
-    } while (!isValidString);
+    if (length > 0) {
+        do {
+            if (!isValidString) {
+                cout << "You must enter " << length << " characters." << endl;
+            }
+            cout << prompt;
+            cin >> returnString;
+            if (returnString.length() == length) {
+                isValidString = true;
+            } else isValidString = false;
+        } while (!isValidString);
+    } else exit(EXIT_FAILURE);
+
     return returnString;
 }
