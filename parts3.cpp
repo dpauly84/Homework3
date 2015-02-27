@@ -1,79 +1,76 @@
-// File Name: parts1.cpp
+// File Name: parts3.cpp
 // Author: Derek Pauly
 // Student ID: s829f376
-// Assignment Number: 1
-// Last Changed: February 5, 2015
+// Assignment Number: 3
+// Last Changed: February 26, 2015
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
 #include "parts3.hpp"
-#include "array_list.hpp"
 #include "utils.hpp"
 
 using namespace std; // Allows all Standard Library items to be used
 
 int main() {
 
-    Part partList[ARRAY_SIZE]; // Part array to hold parts read from file
+    Partlist plist; // list for parts
+    char outFileName[] = "part_list.txt"; // output file
     double weight; // User input weight to use for comparison
-    int numRecords; // Holds the amount of Part Records store in Part array
-    int userSelection; // user input to be used for comparison type
+    int userSelection; // user input to be used for choices
     ifstream inFile(IN_FILENAME); // input file
-    ofstream outFile(OUT_FILENAME); // output file
 
     // Ensure files opened successfully, exit otherwise
-    if (!(inFile.is_open() && outFile.is_open())) {
+    if (!(inFile.is_open())) {
         cout << "Error opening file\n" << "Goodbye" << endl;
         exit(EXIT_FAILURE);
     }
 
-    // Store part information from file into partArray, exit otherwise
-    numRecords = get_part_data_from_file(inFile, partList);
-    if (numRecords == 0) { // Ensure data was read from file exit program otherwise
+    // Store part information from file into Part list, exit otherwise
+    get_part_data_from_file(inFile, plist);
+    if (plist.end() == 0) { // Ensure data was read from file exit program otherwise
         cout << "No parts loaded from file, GoodyBye." << endl;
         exit(EXIT_FAILURE);
     }
+    inFile.close(); // close input file
 
     // Begin running program if data loaded from file successfully
-    cout << PROGRAM_INFO << endl;
-    do {
-        weight = get_double("Enter the weight to use for comparing with the parts’ weights:");
-        if (weight <= 0) {
-            cout << "Weight must be positive!" << endl;
+    cout << plist.end();
+    while (true) {
+        cout << INSTRUCTIONS << endl;
+        do {
+            userSelection = get_int("Enter the number of your choice: ");
+            if (userSelection < 1 || userSelection > 4) // ensure selection is valid
+                cout << "You must enter comparison type 1, 2, 3 or 4!" << endl;
+        } while (userSelection < 1 || userSelection > 4);
+
+        switch (userSelection) {
+            case 1:
+                add_part(plist); // add part to list
+                break;
+            case 2:
+                delete_part(plist); // delete part from list
+                break;
+            case 3:
+                save_part_list(plist, outFileName); // save part list to file
+                break;
+            case 4:
+                return EXIT_SUCCESS; // exit program
         }
-    } while (weight <= 0);
-
-    cout << INSTRUCTIONS << endl;
-    do {
-        userSelection = get_int("Enter the comparison type to use: ");
-        if (userSelection < 1 || userSelection > 3) // ensure selection is valid
-            cout << "You must enter comparison type 1, 2, or 3!" << endl;
-    } while (userSelection < 1 || userSelection > 3);
-
-    send_part_data_to_file(outFile, partList, numRecords, userSelection, weight);
-
-    cout << "\nA list of parts matching your selection has been saved in the file "
-            << OUT_FILENAME << "." << endl;
-
-    // Close files
-    outFile.close();
-    inFile.close();
-
-    return EXIT_SUCCESS;
+    }
 
 } // End main
 
 // Read part file and stores Part structure data into a Part array
-int get_part_data_from_file(ifstream &inFile, Part partArray[]) {
+int get_part_data_from_file(ifstream &inFile, Partlist &p) {
     int numRecords = 0; // Number of parts stored in partArray
     string line; // Line from part text file
 
     while (!inFile.eof()) { // stop when end of file (EOF) is reached
         getline(inFile, line);
         if (line.length() > 0) { // ensure something was read into the line
-            partArray[numRecords] = read_part_record(line);
+            p.add(read_part_record(line));
             numRecords++;
         }
     }
@@ -113,36 +110,10 @@ void rtrim(string &s) {
 }
 
 // Sends part data to file based on user selection and weight
-int send_part_data_to_file
-        (std::ofstream &outFile, Part partArray[], int records, int selection, double weight) {
-    int numRecords = 0; // number of records wrote to file
-    if (1 == selection) {
-        for (int i = 0; i < records; ++i) {
-            if (partArray[i].weight < weight) {
-                print_part(outFile, partArray[i]); // send data to output file
-                numRecords++;
-            }
-        }
-    } else if (2 == selection) {
-        for (int i = 0; i < records; ++i) {
-            if (partArray[i].weight == weight) {
-                print_part(outFile, partArray[i]); // send data to output file
-                numRecords++;
-            }
-        }
-    } else {
-        for (int i = 0; i < records; ++i) {
-            if (partArray[i].weight > weight) {
-                print_part(outFile, partArray[i]); // send data to output file
-                numRecords++;
-            }
-        }
-    }
-    return numRecords;
-}
+
 
 // Prints data items of part structure to output stream
-void print_part(std::ostream &os, Part &part) {
+void print_part(std::ostream &os, Part part) {
     // Set precision
     os.setf(ios::fixed);
     os.setf(ios::showpoint);
@@ -154,4 +125,78 @@ void print_part(std::ostream &os, Part &part) {
             << part.weight << " N, "
             << part.inStock << " "
             << "in stock" << endl;
+}
+
+// Adds part from user input to parts list
+bool add_part(Partlist &parts) {
+    Part addPart; // part to be added
+    char tempName[17]; // temporary hold part name in c-string
+    cout << "\nAdding a new part..." << endl;
+    cout << "\tEnter part name: ";
+
+    // get user input and store in part to be saved to the list
+    cin.getline(tempName, 17); // read 17 characters
+    addPart.pname = tempName;  // convert c-string to std::string
+    addPart.pnumber = get_string("\tEnter a part number: ", 7);
+    addPart.weight = get_double("\tEnter weight: ");
+    addPart.supplier1 = get_string("\tEnter supplier code of primary supplier: ", 4);
+    addPart.supplier2 = get_string("\tEnter supplier code of secondary supplier: ", 4);
+    addPart.inStock = get_int("\tEnter number in stock: ");
+    cout << endl;
+    parts.add(addPart); // add part to the parts list
+
+}
+
+// delete part with matching part number from parts list
+void delete_part(Partlist &parts) {
+    string partNumCompare;
+    Part temp;
+    partNumCompare = get_string("\nEnter the part number of the part to delete: ", 7);
+
+    for (int i = 1; i <= parts.end(); ++i) {
+        if (parts.retrieve(i).pnumber == partNumCompare) {
+            cout << "Deleted the part: ";
+            print_part(cout, parts.retrieve(i));
+            parts.remove(i);
+            break;
+        }
+    }
+}
+
+// output parts list to file(outfile_name[])
+void save_part_list(Partlist &parts, char outfile_name[]) {
+    ofstream outFile(outfile_name);
+
+    if (!(outFile.is_open())) {
+        cout << "Error opening file\n" << "Goodbye" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 1; i <= parts.end(); ++i) {
+        print_part(outFile, parts.retrieve(i));
+    }
+
+    cout << "\nThe current list of parts was saved in the file "
+            << outfile_name << "." << endl;
+
+    outFile.close();
+
+}
+
+// returns string with a set length of characters
+string get_string(string prompt, int length) {
+    string returnString;
+    bool isValidString = true; // conversion status
+
+    do {
+        if (!isValidString) {
+            cout << "You must enter " << length << " characters." << endl;
+        }
+        cout << prompt;
+        cin >> returnString;
+        if (returnString.length() == length) {
+            isValidString = true;
+        } else isValidString = false;
+    } while (!isValidString);
+    return returnString;
 }

@@ -11,7 +11,7 @@
 
 const int MAX_PARTS = 100;
 
-struct Part // TODO
+struct Part
 {
     std::string pname; // part name
     std::string pnumber; // part number format DDDD-DD where D is a digit
@@ -32,9 +32,11 @@ public:
     Part retrieve(int position);
     void remove(int position);
     void add(Part newpart);
+
+
 private:
-    Part m_elements[MAX_PARTS];
     int m_last;
+    Part m_elements[MAX_PARTS];
 };
 
 #endif

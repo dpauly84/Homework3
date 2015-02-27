@@ -31,6 +31,8 @@ int get_int(std::string prompt) {
         else
             isValidNumber = true;
     } while (!isValidNumber);
+    while (cin.get() != '\n')
+        continue;
     return longNum; // type conversion to int
 }
 
